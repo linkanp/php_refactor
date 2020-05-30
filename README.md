@@ -124,7 +124,6 @@ Assuming PHP code is in `app.php`, you could run it by this command, output migh
     3. Just to note – no need to implement anything additional. Just structure your code so that we could implement that later on without braking our tests;
 1. It should look as you'd write it yourself in production – consistent, readable, structured. Anything we'll find in the code, we'll treat as if you'd write it yourself. Basically it's better to just look at the existing code and re-write it from scratch. For example, if `'yes'`/`'no'`, ugly parsing code or `die` statements are left in the solution, we'd treat it as an instant red flag.
 1. Use composer to install testing framework and any needed dependencies you'd like to use, also for enabling autoloading.
-1. Do not use Paysera name in titles, descriptions or the code itself. This helps others to find the libraries that are really related to our services and/or are developed and maintained by our team.
 
 # Solution
 
