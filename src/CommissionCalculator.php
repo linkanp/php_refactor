@@ -32,20 +32,25 @@ class CommissionCalculator
 
     public function calculate()
     {
-        $output = $this->binProvider->lookup();
-        $binData = $this->binProvider->formatResponse($output);
+            $output = $this->binProvider->lookup();
+            $binData = $this->binProvider->formatResponse($output);
 
-        $output = $this->rateProvider->lookup();
-        $rate = $this->rateProvider->formatResponse($output);
+            $output = $this->rateProvider->lookup();
+            $rate = $this->rateProvider->formatResponse($output);
+            if (is_numeric($rate) || $this->currency == 'EUR') {
+                if ($this->currency == 'EUR' || $rate == 0) {
+                    $amountFixed = $this->amount;
+                }
+                if ($this->currency != 'EUR' || $rate > 0) {
+                    $amountFixed = $this->amount / $rate;
+                }
+            } else {
+                throw new Exception('Rate is not valid.');
+            }
 
-        if ( $rate > 0 ) {
-            $amountFixed = $this->amount / $rate;
-        } else {
-            $amountFixed = $this->amount;
-        }
-        $euValue = $binData->country->alpha2;
-        $commission = round($amountFixed * $this->getEuValue($euValue), 2, PHP_ROUND_HALF_EVEN);
-        return $commission;
+            $euValue = $binData->country->alpha2;
+            $commission = round($amountFixed * $this->getEuValue($euValue), 2, PHP_ROUND_HALF_EVEN);
+            return $commission;
     }
 
     private function getEuValue($code) {

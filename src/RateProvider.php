@@ -32,10 +32,11 @@ class RateProvider implements ProviderInterface
 
     public function formatResponse($output)
     {
-        $rate = 0;
-        if(!empty($output['rates'][$this->currency])){
+        if(!empty($output['rates'][$this->currency])) {
             $rate = $output['rates'][$this->currency];
+            return $rate;
+        } else {
+            return null;
         }
-        return $rate;
     }
 }

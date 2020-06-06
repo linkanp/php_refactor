@@ -80,4 +80,74 @@ class CommissionCalculatorTest extends TestCase
         $result = $method->invoke($calculator, $code);
         $this->assertEquals($expected, $result);
     }
+
+    public function inputRateProviderEUR()
+    {
+        $binDataString1 = '{"number":{"length":16,"luhn":true},"scheme":"visa","type":"debit","brand":"Visa/Dankort","prepaid":false,"country":{"numeric":"208","alpha2":"DK","name":"Denmark","emoji":"🇩🇰","currency":"DKK","latitude":56,"longitude":10},"bank":{"name":"Jyske Bank","url":"www.jyskebank.dk","phone":"+4589893300","city":"Hjørring"}}';
+        $inputRow1 = (object)['bin' => 45717360, 'amount' => 100.00, 'currency' => 'EUR'];
+
+        $rate1 = '';
+        return [
+            [$binDataString1, $inputRow1, $rate1, 1]
+        ];
+    }
+
+    /**
+     * @dataProvider inputRateProviderEUR
+     */
+    public function testRateDoesNotExistForEUR($binDataString, $inputRow, $rate, $expected) {
+        $binProvider = $this->createMock(BinProvider::class);
+        $binProvider->method('lookup')
+            ->willReturn($binDataString);
+        $binProvider->method('formatResponse')
+            ->willReturn(json_decode($binDataString));
+
+        $rateProvider = $this->createMock(RateProvider::class);
+
+        $rateProvider->method('formatResponse')
+            ->willReturn($rate);
+
+        $calculator = new CommissionCalculator($binProvider, $rateProvider, $inputRow);
+        $result = $calculator->calculate();
+        $this->assertEquals($expected, $result);
+
+    }
+
+    public function inputRateProviderNonEUR()
+    {
+        $binDataString2 = '{"number":{},"scheme":"visa","country":{"numeric":"840","alpha2":"US","name":"United States of America","emoji":"🇺🇸","currency":"USD","latitude":38,"longitude":-97},"bank":{"name":"VERMONT NATIONAL BANK","url":"www.communitynationalbank.com","phone":"(802) 744-2287"}}';
+        $binDataString3 = '{"number":{"length":16,"luhn":true},"scheme":"visa","type":"debit","brand":"Traditional","prepaid":null,"country":{"numeric":"826","alpha2":"GB","name":"United Kingdom of Great Britain and Northern Ireland","emoji":"🇬🇧","currency":"GBP","latitude":54,"longitude":-2},"bank":{}}';
+
+        $inputRow2 = (object)['bin' => 41417360, 'amount' => 130.00, 'currency' => 'USD'];
+        $inputRow3 = (object)['bin' => 4745030, 'amount' => 2000.00, 'currency' => 'GBP'];
+
+        $rate2 = '';
+        $rate3 = '';
+        return [
+            [$binDataString2, $inputRow2, $rate2,  2.37],
+            [$binDataString3, $inputRow3, $rate3,  45.01]
+        ];
+    }
+
+    /**
+     * @dataProvider inputRateProviderNonEUR
+     */
+    public function testRateDoesNotExistForNonEUR($binDataString, $inputRow, $rate, $expected) {
+        $binProvider = $this->createMock(BinProvider::class);
+        $binProvider->method('lookup')
+            ->willReturn($binDataString);
+        $binProvider->method('formatResponse')
+            ->willReturn(json_decode($binDataString));
+
+        $rateProvider = $this->createMock(RateProvider::class);
+
+        $rateProvider->method('formatResponse')
+            ->willReturn($rate);
+
+        $calculator = new CommissionCalculator($binProvider, $rateProvider, $inputRow);
+        $this->expectException(Exception::class);
+        $calculator->calculate();
+
+    }
+
 }
